@@ -1,0 +1,24 @@
+train: train/images
+val: valid/images
+test: test/images
+nc: 13
+names:
+- Eye_protection
+- Foot_protection
+- Hand_protection
+- Head_protection
+- No_eye_protection
+- No_foot_protection
+- No_hand_protection
+- No_head_protection
+- No_respiratory_protection
+- No_safety_vest
+- Respiratory_protection
+- Safety_vest
+- Person
+roboflow:
+  workspace: fahim-shahriar-2frao
+  project: construction-site-safety-v5wfl
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/fahim-shahriar-2frao/construction-site-safety-v5wfl/dataset/2

@@ -1,0 +1,39 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv/
+
+# Model weights (large files — download or train separately)
+*.pt
+*.pth
+*.onnx
+
+# Training run outputs (large artifacts)
+runs/
+
+# Dataset directories (do NOT push ~10,000 images to GitHub)
+train/
+valid/
+test/
+
+# Smoke test & preview subsets (reproducible from scripts)
+_smoke_test/
+_person_label_preview/
+
+# Ultralytics label caches (regenerated automatically)
+*.cache
+
+# Environment variables & secrets
+.env
+.env.local
+
+# Backups & editor artifacts
+*.bak
+.DS_Store
+Thumbs.db

@@ -1,0 +1,24 @@
+[project]
+name = "rtdetr-ppe"
+version = "0.1.0"
+description = "Construction-Site PPE Detection API + Reasoning Layer using Ultralytics RT-DETR"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "syedraihanm", email = "raihan87859@gmail.com" }
+]
+dependencies = [
+    "fastapi>=0.115.0",
+    "httpx>=0.27.0",
+    "opencv-python>=4.8.0",
+    "pillow>=10.0.0",
+    "pydantic>=2.0.0",
+    "python-multipart>=0.0.9",
+    "pyyaml>=6.0.0",
+    "torch>=2.0.0",
+    "ultralytics>=8.4.0",
+    "uvicorn>=0.30.0",
+]
+
+[tool.uv]
+package = false
