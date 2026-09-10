@@ -254,10 +254,17 @@ def reason_over_detections(detections: List[Dict[str, Any]], intent: Dict[str, A
     # 1. Count queries
     if query_type == "count":
         if target_class:
-            matched = [d for d in detections if d["class"].lower() == target_class.lower()]
+            if negated:
+                # "How many workers are NOT wearing helmets?" → count No_head_protection boxes
+                neg_class = NEGATIVE_PAIRS.get(target_class, f"No_{target_class.lower()}")
+                matched = [d for d in detections if d["class"].lower() == neg_class.lower()]
+                readable_target = target_class.replace("_", " ").lower()
+                answer = f"There are {len(matched)} missing {readable_target} violation{'s' if len(matched) != 1 else ''} detected."
+            else:
+                matched = [d for d in detections if d["class"].lower() == target_class.lower()]
+                readable_target = target_class.replace("_", " ").lower()
+                answer = f"There are {len(matched)} {readable_target} detected."
             avg_conf = (sum(d["confidence"] for d in matched) / len(matched)) if matched else 0.0
-            readable_target = target_class.replace("_", " ").lower()
-            answer = f"There are {len(matched)} {readable_target} detected."
         else:
             # Total PPE items (excluding raw person detections)
             matched = [d for d in detections if d["class"] != "Person"]

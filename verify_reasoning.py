@@ -104,6 +104,20 @@ check("most common = Safety_vest",   "Safety_vest" in r["answer"] or "Safety ves
 r = reason_over_detections(SAMPLE_DETECTIONS, {"needs_detection": False, "query_type": "general_no_detection_needed", "target_class": None, "negated": False})
 check("no detection used",           r["used_detection"] == False, r)
 
+# Regression test: negated count — "How many workers are not wearing helmets?"
+# SAMPLE_DETECTIONS has 1 No_head_protection. Must NOT count Head_protection boxes (which would give 1 too, but for the wrong class).
+# Verify the supporting detections are the *negative* class boxes.
+r = reason_over_detections(SAMPLE_DETECTIONS, {"needs_detection": True, "query_type": "count", "target_class": "Head_protection", "negated": True})
+check("negated count: 1 missing helmet violation detected",  "1" in r["answer"], r["answer"])
+check("negated count: answer uses violation language",       "violation" in r["answer"] or "missing" in r["answer"], r["answer"])
+check("negated count: supporting = No_head_protection",      r["supporting_detections"][0]["class"] == "No_head_protection", r["supporting_detections"])
+check("negated count: supporting len = 1 (not 2 hardhats)",  len(r["supporting_detections"]) == 1, len(r["supporting_detections"]))
+
+# Regression test: positively-negated count for vest (1 No_safety_vest in SAMPLE_DETECTIONS)
+r = reason_over_detections(SAMPLE_DETECTIONS, {"needs_detection": True, "query_type": "count", "target_class": "Safety_vest", "negated": True})
+check("negated count vest: 1 missing safety vest violation",  "1" in r["answer"], r["answer"])
+check("negated count vest: supporting = No_safety_vest",      r["supporting_detections"][0]["class"] == "No_safety_vest", r["supporting_detections"])
+
 
 print()
 print("=" * 60)
