@@ -277,19 +277,13 @@ def reason_over_detections(detections: List[Dict[str, Any]], intent: Dict[str, A
 
             if negated:
                 # Asking about missing PPE (e.g. "Is anyone not wearing a helmet?")
+                # Report raw violation count — we do NOT claim "X of Y people" because Person
+                # detection (58% mAP@50) is too weak for reliable per-person spatial association.
+                # Reporting the raw detector output is more honest and accurate.
                 if len(neg_matches) > 0:
                     readable_target = target_class.replace("_", " ").lower()
-                    if person_count > 0:
-                        # Cap violations at person count — more No_PPE boxes than Person boxes
-                        # happens when the model detects PPE violations on partially-visible workers
-                        # that the Person detector missed (e.g. only head visible in frame).
-                        reported_violations = min(len(neg_matches), person_count)
-                        if reported_violations == person_count:
-                            answer = f"Yes, all {person_count} person(s) detected appear to be missing {readable_target}."
-                        else:
-                            answer = f"Yes, {reported_violations} of {person_count} person(s) detected is not wearing a {readable_target}."
-                    else:
-                        answer = f"Yes, {len(neg_matches)} violation(s) of missing {readable_target} detected."
+                    n = len(neg_matches)
+                    answer = f"Yes, {n} missing-{readable_target} violation{'s' if n > 1 else ''} detected."
                     supporting = neg_matches
                 else:
                     readable_target = target_class.replace("_", " ").lower()
