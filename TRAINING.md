@@ -319,3 +319,125 @@ smoke_test: True
 }
 ```
 
+---
+
+## Run: `ppe_rtdetr` [KAGGLE REAL TRAINING RUN]
+**Date:** 2026-09-10
+**Wall-clock time:** 09:40:31 (34,830.9s across 71 epochs)
+**Status:** Stopped at epoch 71 due to Kaggle session time limit. Model reached peak convergence at **Epoch 65** (fitness: 0.52347).
+
+### Hardware
+| Key | Value |
+|-----|-------|
+| Platform | Linux (Kaggle Cloud Environment) |
+| Python | 3.12.x |
+| PyTorch | 2.5.1+cu124 |
+| CUDA available | True |
+| CUDA version | 12.4 |
+| GPU | Tesla T4 |
+| GPU count | 2 (T4 ×2, device 0 utilized) |
+| GPU VRAM | 16 GB (Peak usage ~9.5 GB) |
+
+### Hyperparameters
+```yaml
+task: detect
+mode: train
+model: rtdetr-l.pt
+data: /kaggle/input/datasets/raihan87/rtdetr/data.yaml
+epochs: 100
+batch: 16
+imgsz: 640
+lr0: 0.0001
+lrf: 0.01
+optimizer: AdamW
+cos_lr: true
+freeze: 4
+patience: 30
+seed: 42
+device: '0'
+workers: 4
+mosaic: 1.0
+flipud: 0.0
+fliplr: 0.5
+degrees: 0.0
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+project: /kaggle/working/runs
+name: ppe_rtdetr
+```
+
+### Best Model Performance (Epoch 65 Checkpoint `weights/best.pt`)
+```json
+{
+  "best_epoch": 65,
+  "mAP50": 0.79902,
+  "mAP50-95": 0.52347,
+  "precision": 0.78404,
+  "recall": 0.79490,
+  "val/giou_loss": 0.41283,
+  "val/cls_loss": 0.61456,
+  "val/l1_loss": 0.16320,
+  "fitness": 0.52347
+}
+```
+
+### Training Progression & Convergence Milestones
+- **Epoch 1**: mAP@50 = 0.0401, mAP@50-95 = 0.0211, P = 0.1655, R = 0.4820
+- **Epoch 5**: mAP@50 = 0.5955, mAP@50-95 = 0.3359, P = 0.5947, R = 0.6301
+- **Epoch 10**: mAP@50 = 0.7084, mAP@50-95 = 0.4125, P = 0.6736, R = 0.7553
+- **Epoch 20**: mAP@50 = 0.7718, mAP@50-95 = 0.4758, P = 0.7265, R = 0.7911
+- **Epoch 30**: mAP@50 = 0.7890, mAP@50-95 = 0.4963, P = 0.7572, R = 0.7954
+- **Epoch 45**: mAP@50 = 0.7977, mAP@50-95 = 0.5116, P = 0.7676, R = 0.8002
+- **Epoch 60**: mAP@50 = **0.79955** (79.96%), mAP@50-95 = 0.52086, P = 0.77828, R = 0.79978 (Peak mAP@50)
+- **Epoch 65 (Best Checkpoint)**: mAP@50 = 0.79902, mAP@50-95 = **0.52347** (52.35%), P = **0.78404**, R = 0.79490 (Peak Overall Fitness)
+- **Epoch 71 (Final Run)**: mAP@50 = 0.79628, mAP@50-95 = 0.52014, P = 0.77082, R = 0.79971
+
+> **Convergence Note**: By epoch 60, training curves reached an asymptotic plateau: cls_loss dropped from 1.237 down to 0.395, and mAP@50 stabilized right at 80.0%. The saved `weights/best.pt` file captures the peak fitness checkpoint at Epoch 65.
+
+---
+
+## Test Split Evaluation (`evaluate.py`)
+
+Run on the held-out **640 test images** (2,233 annotated instances) using `weights/best.pt`:
+
+```bash
+uv run python evaluate.py --weights weights/best.pt --split test
+```
+
+### Overall Test Metrics
+| Metric | Value |
+|---|---|
+| **mAP@50** | **0.7919 (79.19%)** |
+| **mAP@50-95** | **0.5099 (50.99%)** |
+| **Precision** | **0.7805 (78.05%)** |
+| **Recall** | **0.7880 (78.80%)** |
+
+### Per-Class Test Breakdown
+| Class ID | Class Name | Precision | Recall | mAP@50 | mAP@50-95 |
+|---|---|---|---|---|---|
+| 0 | Eye_protection | 0.7066 | 0.8621 | 0.8789 | 0.5769 |
+| 1 | Foot_protection | 0.8087 | 0.9388 | 0.9496 | 0.7413 |
+| 2 | Hand_protection | 0.8695 | 0.8000 | 0.8567 | 0.4127 |
+| 3 | Head_protection | 0.8619 | 0.8408 | 0.8027 | 0.5147 |
+| 4 | No_eye_protection | 0.6697 | 0.8413 | 0.7739 | 0.4811 |
+| 5 | No_foot_protection | 0.8426 | 0.8966 | 0.9193 | 0.6968 |
+| 6 | No_hand_protection | 0.7688 | 0.6814 | 0.7150 | 0.2983 |
+| 7 | No_head_protection | 0.8121 | 0.8182 | 0.8282 | 0.4956 |
+| 8 | No_respiratory_protection | 0.8100 | 0.6986 | 0.7428 | 0.3973 |
+| 9 | No_safety_vest | 0.7799 | 0.6206 | 0.6301 | 0.3951 |
+| 10 | Respiratory_protection | 0.8812 | 0.8646 | 0.8663 | 0.6334 |
+| 11 | Safety_vest | 0.7667 | 0.7709 | 0.7492 | 0.4998 |
+| 12 | Person | 0.5690 | 0.6103 | 0.5823 | 0.4862 |
+
+### Critical Safety Compliance Pair Confusion Analysis
+| Safety Pair | Actual Positive → Pred Negative (False Violation) | Actual Negative → Pred Positive (**False Compliance - Critical**) |
+|---|---|---|
+| **Head_protection vs No_head_protection** | 15 instances | **41 instances** |
+| **Safety_vest vs No_safety_vest** | 18 instances | **41 instances** |
+| **Eye_protection vs No_eye_protection** | 6 instances | **3 instances** |
+
+> **Memo Finding**: The confusion analysis exposes that **False Compliance** (a worker without PPE being classified as wearing PPE) occurs more frequently than False Violations. This insight justifies Stage 3 in our reasoning pipeline (`app/reasoning.py`), where low-confidence detections trigger an explicit conservative warning rather than falsely clearing a worker.
+
+
+

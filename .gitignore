@@ -35,5 +35,8 @@ _person_label_preview/
 
 # Backups & editor artifacts
 *.bak
+*.zip
+*.tar
+*.tar.gz
 .DS_Store
 Thumbs.db
