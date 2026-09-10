@@ -1,32 +1,46 @@
 # Model Weights Directory
 
-This directory stores the fine-tuned RT-DETR model weights.
+This directory stores the fine-tuned RT-DETR-L model weights (`best.pt`, 63 MB).
 
-## Expected Checkpoint
+## Download Pre-Trained Weights (Recommended)
 
-Place your trained weights checkpoint at:
-```
-weights/best.pt
-```
+The fine-tuned checkpoint is hosted on GitHub Releases:
 
-## How to Obtain Weights
-
-### 1. From Kaggle / Google Colab
-After running `kaggle_train.py` on Kaggle with GPU acceleration:
-1. Navigate to the notebook's output tab.
-2. Download `runs/train/ppe_rtdetr/weights/best.pt`.
-3. Save it to `weights/best.pt` in this repository.
-
-### 2. Pretrained Base Checkpoint
-If fine-tuning or running tests with the base checkpoint:
 ```bash
-# Ultralytics will auto-download rtdetr-l.pt upon first run
+# Linux / macOS / Git Bash
+curl -L https://github.com/syedraihanm/rtdetr-ppe/releases/download/v1.0/best.pt -o weights/best.pt
+
+# Windows PowerShell
+Invoke-WebRequest -Uri https://github.com/syedraihanm/rtdetr-ppe/releases/download/v1.0/best.pt -OutFile weights/best.pt
+```
+
+**Direct link:** https://github.com/syedraihanm/rtdetr-ppe/releases/download/v1.0/best.pt
+
+---
+
+## Reproduce From Scratch (Optional)
+
+If you want to retrain from the base checkpoint instead of using the released weights:
+
+1. Run `kaggle_train.py` on Kaggle with a T4 GPU (see `TRAINING.md` for exact steps).
+2. Download `runs/train/ppe_rtdetr/weights/best.pt` from the Kaggle output tab.
+3. Place it at `weights/best.pt`.
+
+---
+
+## Pretrained Base Checkpoint
+
+```bash
+# Ultralytics will auto-download rtdetr-l.pt on first run
 uv run python -c "from ultralytics import RTDETR; RTDETR('rtdetr-l.pt')"
 ```
 
-## Inference Fallback
-The FastAPI application (`app/detection.py`) automatically looks for weights in this order:
-1. Path specified in `MODEL_PATH` environment variable
+---
+
+## Inference Fallback Order
+
+`app/detection.py` resolves the model path in this order:
+1. `MODEL_PATH` environment variable
 2. `weights/best.pt`
 3. `runs/train/ppe_rtdetr/weights/best.pt`
 4. `rtdetr-l.pt` (base model fallback)

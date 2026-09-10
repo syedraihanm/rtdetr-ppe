@@ -107,7 +107,7 @@ This project is managed using [`uv`](https://github.com/astral-sh/uv) for fast, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/rtdetr-ppe.git
+git clone https://github.com/syedraihanm/rtdetr-ppe.git
 cd rtdetr-ppe
 
 # Sync environment using uv
@@ -121,7 +121,21 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment Variables (Optional)
+### 2. Download Model Weights
+
+The fine-tuned `best.pt` checkpoint (63 MB, Epoch 65, **79.19% mAP@50**) is hosted on GitHub Releases:
+
+```bash
+# Linux / macOS / Git Bash
+curl -L https://github.com/syedraihanm/rtdetr-ppe/releases/download/v1.0/best.pt -o weights/best.pt
+
+# Windows PowerShell
+Invoke-WebRequest -Uri https://github.com/syedraihanm/rtdetr-ppe/releases/download/v1.0/best.pt -OutFile weights/best.pt
+```
+
+> **Direct link:** https://github.com/syedraihanm/rtdetr-ppe/releases/download/v1.0/best.pt
+
+### 3. Configure Environment Variables (Optional)
 To enable the LLM Intent Router for `/ask`, set an API key (if none is set, the service automatically falls back to an intelligent deterministic rule-based router):
 
 ```bash
@@ -134,7 +148,7 @@ export OPENAI_API_KEY="your-openai-key"
 export MODEL_PATH="weights/best.pt"
 ```
 
-### 3. Launch API Server
+### 4. Launch API Server
 
 ```bash
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
