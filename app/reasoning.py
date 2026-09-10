@@ -118,8 +118,13 @@ def _rule_based_fallback_intent(question: str) -> Dict[str, Any]:
             "negated": False,
         }
 
-    # Negation check
-    negated = any(neg in q for neg in ["not", "no ", "without", "missing", "unprotected", "bare"])
+    # Negation check — explicit negation OR universal compliance questions checking for non-compliance
+    # (e.g. "Is everyone wearing a vest?" checks for violations per system prompt rules)
+    is_negated_word = any(neg in q for neg in ["not", "no ", "without", "missing", "unprotected", "bare"])
+    is_universal_compliance = any(u in q for u in ["everyone", "everybody"]) or bool(
+        re.search(r"\b(are\s+all|all\s+(workers|people|wearing))\b", q)
+    )
+    negated = is_negated_word or is_universal_compliance
 
     # Target class check
     target_class = "Person"
@@ -199,12 +204,12 @@ def route_intent(question: str, timeout: float = 8.0) -> Dict[str, Any]:
                     "https://api.openai.com/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {openai_key}",
-                        "Content-Type": "application/json",
+                        "content-type": "application/json",
                     },
                     json={
                         "model": "gpt-4o-mini",
+                        "max_tokens": 256,
                         "temperature": 0.0,
-                        "response_format": {"type": "json_object"},
                         "messages": [
                             {"role": "system", "content": SYSTEM_PROMPT},
                             {"role": "user", "content": question},
@@ -213,54 +218,52 @@ def route_intent(question: str, timeout: float = 8.0) -> Dict[str, Any]:
                 )
                 if resp.status_code == 200:
                     content = resp.json()["choices"][0]["message"]["content"].strip()
+                    content = re.sub(r"^```json\s*|\s*```$", "", content, flags=re.MULTILINE)
                     data = json.loads(content)
                     data["target_class"] = normalize_class_name(data.get("target_class"))
                     return data
         except Exception as e:
             logger.warning(f"OpenAI direct HTTP router failed: {e}. Falling back.")
 
-    # Deterministic local fallback
+    # Stage 1 Fallback: Deterministic rule-based router if neither LLM is configured or reached
+    logger.info("Using deterministic rule-based intent router fallback.")
     return _rule_based_fallback_intent(question)
 
 
-# ── Stage 2: Structured Reasoning (Deterministic Python Logic) ───────────────
+# ── Stage 2: Deterministic Structured Reasoning ──────────────────────────────
 
 def reason_over_detections(detections: List[Dict[str, Any]], intent: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Stage 2: Deterministic Pure Python Reasoning.
-    Executes business logic strictly over detection outputs based on intent slots.
+    Stage 2: Deterministic Structured Reasoning.
+    Evaluates detections against router intent. Pure deterministic Python logic.
+    NO LLM involved in this step.
     """
-    if not intent.get("needs_detection", True):
+    query_type = intent.get("query_type")
+    target_class = intent.get("target_class")
+    negated = intent.get("negated", False)
+    needs_detection = intent.get("needs_detection", True)
+
+    if not needs_detection or query_type == "general_no_detection_needed":
         return {
-            "answer": "This question does not appear to relate to PPE safety compliance or worker presence.",
+            "answer": "This question does not require detection data from the image. Please ask about PPE compliance or site safety.",
             "used_detection": False,
             "confidence_val": 1.0,
             "supporting_detections": [],
         }
 
-    query_type = intent.get("query_type", "presence_check")
-    target_class = intent.get("target_class")
-    negated = intent.get("negated", False)
-
-    person_count = sum(1 for d in detections if d["class"] == "Person")
-
-    # 1. Count query
+    # 1. Count queries
     if query_type == "count":
         if target_class:
-            if negated:
-                neg_class = NEGATIVE_PAIRS.get(target_class, f"No_{target_class.lower()}")
-                matched = [d for d in detections if d["class"].lower() == neg_class.lower()]
-                readable_name = target_class.replace("_", " ").lower()
-                answer = f"{len(matched)} instance(s) detected without {readable_name}."
-            else:
-                matched = [d for d in detections if d["class"].lower() == target_class.lower()]
-                readable_name = target_class.replace("_", " ").lower()
-                answer = f"{len(matched)} {readable_name} detected."
+            matched = [d for d in detections if d["class"].lower() == target_class.lower()]
+            avg_conf = (sum(d["confidence"] for d in matched) / len(matched)) if matched else 0.0
+            readable_target = target_class.replace("_", " ").lower()
+            answer = f"There are {len(matched)} {readable_target} detected."
         else:
-            matched = detections
-            answer = f"Total of {len(matched)} objects detected."
+            # Total PPE items (excluding raw person detections)
+            matched = [d for d in detections if d["class"] != "Person"]
+            avg_conf = (sum(d["confidence"] for d in matched) / len(matched)) if matched else 0.0
+            answer = f"There are {len(matched)} PPE items detected in total."
 
-        avg_conf = (sum(d["confidence"] for d in matched) / len(matched)) if matched else 0.0
         return {
             "answer": answer,
             "used_detection": True,
@@ -268,7 +271,7 @@ def reason_over_detections(detections: List[Dict[str, Any]], intent: Dict[str, A
             "supporting_detections": matched,
         }
 
-    # 2. Presence check / Compliance check
+    # 2. Presence check / compliance check
     elif query_type == "presence_check":
         if target_class:
             neg_class = NEGATIVE_PAIRS.get(target_class, f"No_{target_class.lower()}")
@@ -276,14 +279,14 @@ def reason_over_detections(detections: List[Dict[str, Any]], intent: Dict[str, A
             pos_matches = [d for d in detections if d["class"].lower() == target_class.lower()]
 
             if negated:
-                # Asking about missing PPE (e.g. "Is anyone not wearing a helmet?")
+                # Asking about missing PPE (e.g. "Is anyone not wearing a helmet?" or "Is everyone wearing a vest?")
                 # Report raw violation count — we do NOT claim "X of Y people" because Person
                 # detection (58% mAP@50) is too weak for reliable per-person spatial association.
                 # Reporting the raw detector output is more honest and accurate.
                 if len(neg_matches) > 0:
                     readable_target = target_class.replace("_", " ").lower()
                     n = len(neg_matches)
-                    answer = f"Yes, {n} missing-{readable_target} violation{'s' if n > 1 else ''} detected."
+                    answer = f"Yes, {n} missing {readable_target} violation{'s' if n > 1 else ''} detected."
                     supporting = neg_matches
                 else:
                     readable_target = target_class.replace("_", " ").lower()

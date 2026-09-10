@@ -213,7 +213,7 @@ curl -X POST "http://localhost:8000/ask" \
 **Response (`200 OK`):**
 ```json
 {
-  "answer": "Yes, 1 of 3 person(s) detected is not wearing a head protection.",
+  "answer": "Yes, 1 missing head protection violation detected.",
   "used_detection": true,
   "confidence": "high",
   "supporting_detections": [

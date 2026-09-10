@@ -58,6 +58,13 @@ i = _rule_based_fallback_intent("What is the capital of France?")
 check("off-topic -> no detection",    i["needs_detection"] == False, i)
 check("off-topic query_type",         i["query_type"] == "general_no_detection_needed", i["query_type"])
 
+# Edge case: "Is everyone wearing a vest?" (universal compliance check)
+i = _rule_based_fallback_intent("Is everyone wearing a vest?")
+check("everyone vest -> presence_check",   i["query_type"] == "presence_check", i["query_type"])
+check("everyone vest -> target Safety_vest", i["target_class"] == "Safety_vest", i["target_class"])
+check("everyone vest -> negated = True (checks non-compliance)", i["negated"] == True, i["negated"])
+check("everyone vest -> needs_detection = True", i["needs_detection"] == True)
+
 
 print()
 print("=" * 60)
@@ -147,7 +154,18 @@ check("pipeline returns answer field",          "answer" in out, out)
 check("pipeline returns confidence field",      "confidence" in out, out)
 check("pipeline returns used_detection field",  "used_detection" in out, out)
 check("pipeline answer mentions missing",       any(w in out["answer"].lower() for w in ["not", "missing", "without", "violation"]), out["answer"])
+check("pipeline copy polish: 'missing head protection violation'", "missing head protection violation" in out["answer"], out["answer"])
 print(f"  Full pipeline output: {out['answer']!r} (confidence={out['confidence']})")
+
+# Safety-critical edge case: "Is everyone wearing a vest?"
+# SAMPLE_DETECTIONS has 2 Safety_vest and 1 No_safety_vest.
+# Fallback router must NOT treat it as normal positive-presence (which would see 2 vests and falsely say "Yes").
+# It must flag the No_safety_vest violation!
+out_vest = execute_pipeline("Is everyone wearing a vest?", SAMPLE_DETECTIONS, threshold=0.5)
+check("everyone vest -> flags violation", "violation" in out_vest["answer"].lower(), out_vest["answer"])
+check("everyone vest -> 1 missing safety vest violation detected", "1 missing safety vest violation detected" in out_vest["answer"], out_vest["answer"])
+check("everyone vest -> supporting is No_safety_vest", out_vest["supporting_detections"][0]["class"] == "No_safety_vest")
+print(f"  Pipeline 'Is everyone wearing a vest?' output: {out_vest['answer']!r} (supporting={out_vest['supporting_detections'][0]['class']})")
 
 
 print()
