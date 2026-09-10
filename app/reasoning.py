@@ -280,7 +280,14 @@ def reason_over_detections(detections: List[Dict[str, Any]], intent: Dict[str, A
                 if len(neg_matches) > 0:
                     readable_target = target_class.replace("_", " ").lower()
                     if person_count > 0:
-                        answer = f"Yes, {len(neg_matches)} of {person_count} person(s) detected is not wearing a {readable_target}."
+                        # Cap violations at person count — more No_PPE boxes than Person boxes
+                        # happens when the model detects PPE violations on partially-visible workers
+                        # that the Person detector missed (e.g. only head visible in frame).
+                        reported_violations = min(len(neg_matches), person_count)
+                        if reported_violations == person_count:
+                            answer = f"Yes, all {person_count} person(s) detected appear to be missing {readable_target}."
+                        else:
+                            answer = f"Yes, {reported_violations} of {person_count} person(s) detected is not wearing a {readable_target}."
                     else:
                         answer = f"Yes, {len(neg_matches)} violation(s) of missing {readable_target} detected."
                     supporting = neg_matches
