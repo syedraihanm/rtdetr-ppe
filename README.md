@@ -123,7 +123,7 @@ pip install -r requirements.txt
 
 ### 2. Download Model Weights
 
-The fine-tuned `best.pt` checkpoint (63 MB, Epoch 65, **79.19% mAP@50**) is hosted on GitHub Releases:
+The fine-tuned `best.pt` checkpoint (~246 MB, Epoch 65, **79.19% mAP@50**) is hosted on GitHub Releases:
 
 ```bash
 # Linux / macOS / Git Bash

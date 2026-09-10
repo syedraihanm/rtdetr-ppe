@@ -1,6 +1,6 @@
 # Model Weights Directory
 
-This directory stores the fine-tuned RT-DETR-L model weights (`best.pt`, 63 MB).
+This directory stores the fine-tuned RT-DETR-L model weights (`best.pt`, ~246 MB).
 
 ## Download Pre-Trained Weights (Recommended)
 
