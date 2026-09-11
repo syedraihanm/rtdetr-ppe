@@ -240,7 +240,7 @@ curl -X POST "http://localhost:8000/ask" \
 
 ## 🧠 Decision Layer Design (No Frameworks)
 
-Per Section 6 of the project brief, `/ask` uses an explicit 3-stage hand-written pipeline:
+`/ask` uses an explicit 3-stage hand-written pipeline:
 
 1. **Stage 1 — Intent Router (`route_intent`)**:
    Makes a direct raw HTTP call (`httpx`) to the LLM API with strict JSON constraint:
