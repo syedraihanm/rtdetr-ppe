@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from app.detection import predict_from_bytes
-from app.reasoning import execute_pipeline
+from app.reasoning import apply_guardrail, execute_pipeline, reason_over_detections, route_intent
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("rtdetr-ppe.api")
@@ -127,13 +127,23 @@ async def ask_endpoint(
         )
 
     try:
-        contents = await file.read()
-        det_output = predict_from_bytes(contents, conf_threshold=conf)
-        detections = det_output.get("detections", [])
+        # Stage 1: Intent Routing — decide whether query needs detector invocation
+        intent = route_intent(question)
 
-        pipeline_result = execute_pipeline(
-            question=question,
-            detections=detections,
+        detections = []
+        if intent.get("needs_detection", True):
+            contents = await file.read()
+            det_output = predict_from_bytes(contents, conf_threshold=conf)
+            detections = det_output.get("detections", [])
+
+        # Stage 2: Structured Reasoning over detected objects
+        reasoning_result = reason_over_detections(detections, intent)
+
+        # Stage 3: Confidence Guardrail validation
+        pipeline_result = apply_guardrail(
+            reasoning_result,
+            all_detections=detections,
+            intent=intent,
             threshold=guardrail_threshold,
         )
         return pipeline_result
