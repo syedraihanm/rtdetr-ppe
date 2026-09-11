@@ -55,32 +55,42 @@ During initial smoke testing, we uncovered that 4,990 label files (45.9% of the 
 ## 5. Systematic Failure Analysis (5 Real Test Cases)
 
 1. **False Compliance on Hardhat (Shadow / Cap Curvature)**
+   - *Visual Evidence:*  
+     ![Case 1: Shadow False Compliance](docs/images/failure_cases/thumb_case1.jpg)
    - *Image:* `2008_008526_jpg.rf.aa97dfd8d6642f41fb1859b06bc6849b.jpg`
-   - *GT:* `No_head_protection` | *Prediction:* `Head_protection` (conf: 0.357)
+   - *GT:* `No_head_protection` | *Prediction:* `Head_protection` (conf: 0.304)
    - *Root Cause:* A worker standing in deep shadow wearing a dark beanie; the brim curvature under harsh overhead sun creates an edge gradient indistinguishable from a hardhat dome.
    - *Consequence:* False compliance—safety dashboard fails to trigger an alarm.
 
 2. **False Compliance on Safety Vest (High-Chroma Workwear)**
+   - *Visual Evidence:*  
+     ![Case 2: High-Vis Workwear Confusion](docs/images/failure_cases/thumb_case2.jpg)
    - *Image:* `001425_jpg.rf.7b40482d57ae1b00904e0c6920eb5b14.jpg`
-   - *GT:* `No_safety_vest` | *Prediction:* `Safety_vest` (conf: 0.941)
+   - *GT:* `No_safety_vest` | *Prediction:* `Safety_vest` (conf: 0.856)
    - *Root Cause:* Worker wearing a high-visibility orange cotton work shirt with vertical tool harness straps. The model conflates saturated fluorescent fabric and vertical straps with an ANSI Class 2 reflective vest.
    - *Consequence:* True violation is missed.
 
 3. **Extreme Scale Disparity / Small PPE Miss**
+   - *Visual Evidence:*  
+     ![Case 3: Extreme Scale Disparity](docs/images/failure_cases/thumb_case3.jpg)
    - *Image:* `construction-3-_mp4-148_jpg.rf.3250f3d4c8f42f33202552ed95b276fb.jpg`
    - *GT:* `Hand_protection` & `Eye_protection` | *Prediction:* Zero detections for gloves/glasses
    - *Root Cause:* Wide-angle crane surveillance shot where workers are < 80 pixels tall. Gloves (< 14×14 px) and glasses (< 8×8 px) vanish under RT-DETR's stride-32 feature pyramid downsampling.
    - *Consequence:* High false alarm rate for small PPE when cameras are mounted far from active work zones.
 
 4. **Truncated Boundary / Edge-Cropped Worker**
+   - *Visual Evidence:*  
+     ![Case 4: Truncated Edge Silhouette](docs/images/failure_cases/thumb_case4.jpg)
    - *Image:* `-1680-_png_jpg.rf.73cee3e264b17ce5579750df4e4610f4.jpg`
    - *GT:* `Person` + `Safety_vest` | *Prediction:* `Safety_vest` (conf: 0.394), Person missed
    - *Root Cause:* Worker stepping into frame on the far left edge with > 65% of their body cut off. The model fails to recognize the human silhouette and generates an ambiguous low-confidence vest fragment.
    - *Consequence:* Demonstrates boundary instability in fixed camera zones.
 
 5. **Industrial Clutter / Equipment Confusion**
+   - *Visual Evidence:*  
+     ![Case 5: Equipment False Positive](docs/images/failure_cases/thumb_case5.jpg)
    - *Image:* `4c43875bc97cdaece84ac6ce555235f1_jpg.rf.ed68f98415da2821d09456560a4129c6.jpg`
-   - *GT:* Background (Concrete Mixer) | *Prediction:* `Head_protection` (conf: 0.362)
+   - *GT:* Background (Concrete Mixer) | *Prediction:* `Head_protection` (conf: 0.364)
    - *Root Cause:* A yellow curved hydraulic cap on stationary machinery shares identical convex curvature, specular highlight, and safety-yellow hue with a construction helmet.
    - *Consequence:* Phantom hardhat reported in an empty machinery zone.
 

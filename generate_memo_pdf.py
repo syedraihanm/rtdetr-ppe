@@ -16,6 +16,7 @@ from reportlab.platypus import (
     PageBreak,
     KeepTogether,
     HRFlowable,
+    Image as RLImage,
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
@@ -200,41 +201,52 @@ def build_pdf(filename="memo.pdf"):
     ))
 
     failures_data = [
-        [Paragraph("Case / Image ID", th_style), Paragraph("Ground Truth vs Predicted", th_style), Paragraph("Root Cause & Safety Consequence", th_style)],
         [
-            Paragraph("<b>Case 1: Shadow False Compliance</b><br/><font name='Courier' size=6.5>2008_008526...jpg</font>", td_style),
-            Paragraph("GT: <b>No_head_protection</b><br/>Pred: <b>Head_protection</b> (conf 0.36)", td_style),
-            Paragraph("Worker in deep shadow wearing dark beanie. Curvature of cap brim under overhead lighting mimics hardhat dome. <i>Consequence: Dangerous false compliance — site safety dashboard clears unhelmeted worker.</i>", td_style),
+            Paragraph("Visual Evidence", th_style),
+            Paragraph("Case / Test Image", th_style),
+            Paragraph("Ground Truth vs Predicted", th_style),
+            Paragraph("Root Cause & Safety Consequence", th_style),
         ],
         [
-            Paragraph("<b>Case 2: High-Vis Shirt Confusion</b><br/><font name='Courier' size=6.5>001425...7b40.jpg</font>", td_style),
-            Paragraph("GT: <b>No_safety_vest</b><br/>Pred: <b>Safety_vest</b> (conf 0.94)", td_style),
-            Paragraph("Worker wearing high-visibility orange work shirt with vertical tool harness straps. Model associates fluorescent hue and vertical lines with retroreflective vest tape. <i>Consequence: Misses mandatory safety vest violation.</i>", td_style),
+            RLImage("docs/images/failure_cases/thumb_case1.jpg", width=1.18*inch, height=0.58*inch),
+            Paragraph("<b>Case 1: Shadow False Compliance</b><br/><font name='Courier' size=5.8>2008_008526...jpg</font>", td_style),
+            Paragraph("GT: <b>No_head_protection</b><br/>Pred: <b>Head_protection</b> (conf 0.30)", td_style),
+            Paragraph("Worker in shadow wearing dark beanie; brim curvature mimics hardhat dome. <i>Consequence: Dangerous false compliance clears unhelmeted worker.</i>", td_style),
         ],
         [
-            Paragraph("<b>Case 3: Extreme Scale Miss (Small PPE)</b><br/><font name='Courier' size=6.5>construction-3...148.jpg</font>", td_style),
-            Paragraph("GT: <b>Hand_protection</b> & <b>Eye_protection</b><br/>Pred: <i>Zero detections</i> for gloves/glasses", td_style),
-            Paragraph("High-angle crane shot with workers under 80 px height. Gloves (< 14&times;14 px) and glasses (< 8&times;8 px) collapse below spatial resolution of RT-DETR stride-32 feature pyramid. <i>Consequence: High false alarm rate on distant PPE.</i>", td_style),
+            RLImage("docs/images/failure_cases/thumb_case2.jpg", width=1.18*inch, height=0.58*inch),
+            Paragraph("<b>Case 2: High-Vis Workwear Confusion</b><br/><font name='Courier' size=5.8>001425...7b40.jpg</font>", td_style),
+            Paragraph("GT: <b>No_safety_vest</b><br/>Pred: <b>Safety_vest</b> (conf 0.86)", td_style),
+            Paragraph("High-vis work shirt with tool straps mimics retroreflective vest tape. <i>Consequence: Safety vest violation missed by auditor.</i>", td_style),
         ],
         [
-            Paragraph("<b>Case 4: Truncated Edge Silhouette</b><br/><font name='Courier' size=6.5>-1680...73ce.jpg</font>", td_style),
-            Paragraph("GT: <b>Person</b> + <b>Safety_vest</b><br/>Pred: Safety_vest (conf 0.39), Person missed", td_style),
-            Paragraph("Worker stepping into frame along left edge. With 65% of torso cropped, model misses person silhouette entirely and outputs vest bounding box with confidence 0.39 below decision threshold.", td_style),
+            RLImage("docs/images/failure_cases/thumb_case3.jpg", width=1.18*inch, height=0.58*inch),
+            Paragraph("<b>Case 3: Extreme Scale Disparity</b><br/><font name='Courier' size=5.8>construction-3...148.jpg</font>", td_style),
+            Paragraph("GT: <b>Hand_protection</b> & <b>Eye</b><br/>Pred: <i>Zero detections</i> for PPE", td_style),
+            Paragraph("High crane shot with workers &lt; 80 px; gloves &lt; 14 px collapse below stride-32 feature pyramid. <i>Consequence: False alarms on distant PPE.</i>", td_style),
         ],
         [
-            Paragraph("<b>Case 5: Equipment False Positive</b><br/><font name='Courier' size=6.5>4c43875b...29c6.jpg</font>", td_style),
-            Paragraph("GT: <b>Background (Machinery)</b><br/>Pred: <b>Head_protection</b> (conf 0.36)", td_style),
-            Paragraph("Yellow convex hydraulic cap on stationary concrete mixer misclassified as protective helmet due to identical color, specular reflection, and hemispherical geometry.", td_style),
+            RLImage("docs/images/failure_cases/thumb_case4.jpg", width=1.18*inch, height=0.58*inch),
+            Paragraph("<b>Case 4: Truncated Edge Silhouette</b><br/><font name='Courier' size=5.8>-1680...73ce.jpg</font>", td_style),
+            Paragraph("GT: <b>Person</b> + <b>Safety_vest</b><br/>Pred: Vest (conf 0.39), Person missed", td_style),
+            Paragraph("Worker stepping into frame on left edge (65% cropped). Model misses worker silhouette and vest falls below 0.50 threshold.", td_style),
+        ],
+        [
+            RLImage("docs/images/failure_cases/thumb_case5.jpg", width=1.18*inch, height=0.58*inch),
+            Paragraph("<b>Case 5: Equipment False Positive</b><br/><font name='Courier' size=5.8>4c43875b...29c6.jpg</font>", td_style),
+            Paragraph("GT: <b>Background (Mixer)</b><br/>Pred: <b>Head_protection</b> (conf 0.36)", td_style),
+            Paragraph("Yellow convex hydraulic cap on mixer misclassified as helmet due to specular highlight and hemispherical geometry.", td_style),
         ],
     ]
-    t_failures = Table(failures_data, colWidths=[1.9*inch, 2.0*inch, 3.6*inch])
+    t_failures = Table(failures_data, colWidths=[1.25*inch, 1.45*inch, 1.7*inch, 3.1*inch])
     t_failures.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (0, 1), (0, -1), "CENTER"),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.HexColor("#ffffff"), colors.HexColor("#f8fafc")]),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
     ]))
     story.append(t_failures)
     story.append(Spacer(1, 4))
