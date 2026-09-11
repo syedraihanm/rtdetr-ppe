@@ -1,4 +1,4 @@
-# TECHNICAL MEMORANDUM: Real-Time Construction PPE Detection & Decision Layer
+# RT-DETR-Based Object Detection for Safety Equipment
 
 **Author:** Syed Mohamed Raihan  
 **Model:** Ultralytics RT-DETR-L (`weights/best.pt`)  
@@ -9,7 +9,7 @@
 
 ## 1. Domain/Dataset Choice, Sourcing & Labeling
 
-We selected the Roboflow Universe *Construction Site Safety v2* dataset (CC BY 4.0), comprising 10,875 high-resolution construction site images annotated across 12 safety equipment classes. Because the original dataset labeled protective gear without annotating the workers wearing them, we expanded the ontology to 13 classes by auto-labeling **Person** bounding boxes using a COCO-pretrained YOLO11 detector at confidence &ge; 0.50 (`add_person_class.py`). This generated 11,018 worker instances across 62.4% of images, enabling a single unified detector to reason over both equipment presence and worker context simultaneously without brittle cascaded runtime models.
+Selected the Roboflow Universe Construction Site Safety v2 dataset (CC BY 4.0), with 10,875 high-resolution construction scene images annotated across 12 safety equipment classes. Because the original dataset labeled equipment without annotating workers. Expanded the dataset to 13 classes by automatically labeling Person bounding boxes using a COCO-pretrained YOLO11 detector with a confidence threshold of ≥ 0.50. This yields 11,018 worker instances across 62.4% of images, enabling the model to reason over both equipment presence and worker context in a single unified detector.
 
 ---
 
@@ -21,7 +21,7 @@ The dataset is partitioned into **82.4% train (8,956 images) / 11.8% valid (1,27
 
 ## 3. Quantitative Evaluation Metrics & Operational Meaning
 
-The model completed 71 epochs on a Kaggle Tesla T4 GPU (9h 40m wall-clock time), reaching peak fitness at **Epoch 65**. We evaluated the final checkpoint (`weights/best.pt`) on both the validation split and the completely held-out 640-image test set:
+I stopped training at **Epoch 71** (after 9h 40m of compute on a Kaggle Tesla T4 GPU) as validation metrics showed clear saturation after peak fitness was reached at **Epoch 65**. Evaluation of the final checkpoint (`weights/best.pt`) was conducted on both the validation split and the completely held-out 640-image test set:
 
 | Split / Class | Precision | Recall | mAP@50 | mAP@50-95 | Operational Significance |
 |---|---|---|---|---|---|
@@ -42,13 +42,16 @@ Confusion matrix analysis between compliance and violation pairs reveals:
 - **Head Protection**: 15 False Violations vs. **41 False Compliances** (unhelmeted workers classified as wearing hardhats).
 - **Safety Vest**: 18 False Violations vs. **41 False Compliances** (plain clothes classified as safety vests).
 
-In construction safety, **False Compliance is catastrophic** (a worker without PPE is falsely recorded as safe). This finding directly guided the implementation of Stage 3 in our reasoning engine.
+In construction safety, **False Compliance is catastrophic** (a worker without PPE is falsely recorded as safe). This finding directly guided the implementation of Stage 3 in the reasoning engine.
 
 ---
 
 ## 4. Mid-Project Data Engineering Pivot
 
-During initial smoke testing, we uncovered that 4,990 label files (45.9% of the dataset) contained corrupt lines mixing 5-parameter YOLO detection boxes with raw polygon segmentation coordinates. Ultralytics silently dropped these corrupted images during training. We developed `fix_mixed_labels.py` to strip polygon rows while retaining valid bounding boxes, recovering **21,529 bounding boxes** that would otherwise have been discarded. Additionally, recognizing that Roboflow lacked a worker class inspired `add_person_class.py`, avoiding a two-stage cascaded architecture at runtime.
+During initial smoke testing, inspection uncovered that 4,990 label files (45.9% of the dataset) contained corrupt lines mixing 5-parameter YOLO detection boxes with raw polygon segmentation coordinates. Ultralytics silently dropped these corrupted images during training. Developing `fix_mixed_labels.py` stripped polygon rows while retaining valid bounding boxes, recovering **21,529 bounding boxes** that would otherwise have been discarded. Additionally, recognizing that Roboflow lacked a worker class inspired `add_person_class.py`, avoiding a two-stage cascaded architecture at runtime.
+
+![Figure 1: Sample RT-DETR Prediction and Validation Normalized Confusion Matrix](docs/images/page1_detection_preview.jpg)  
+*Figure 1: Left: Real-time RT-DETR-L detections demonstrating simultaneous Person anchor context and PPE bounding box predictions. Right: Normalized validation confusion matrix illustrating high on-diagonal accuracy and off-diagonal compliance confusions.*
 
 ---
 
@@ -98,7 +101,7 @@ During initial smoke testing, we uncovered that 4,990 label files (45.9% of the 
 
 ## 6. Hand-Written 3-Stage Decision Layer & Insufficient Information Case
 
-To satisfy the strict constraint forbidding agentic frameworks (no LangChain, CrewAI, AutoGen), we designed a deterministic, hand-written 3-stage pipeline in `app/reasoning.py`:
+To satisfy the strict constraint forbidding agentic frameworks (no LangChain, CrewAI, AutoGen), `app/reasoning.py` executes a hand-written three-stage deterministic pipeline:
 - **Stage 1 (Intent Router):** Parses free-form user questions into `{needs_detection, query_type, target_class, negated}` via a direct HTTP call to an LLM, backed by a deterministic regex-based fallback router.
 - **Stage 2 (Structured Reasoning):** Executes pure Python deterministic rules to evaluate counts, presence, and compliance pairings (e.g. `Head_protection` vs `No_head_protection`).
 - **Stage 3 (Confidence Guardrail):** Evaluates detection confidence and contextual evidence. If evidence is ambiguous, it returns an explicit disclaimer instead of a false guess.

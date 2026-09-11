@@ -1,4 +1,4 @@
-# Construction-Site PPE Detection & Reasoning API (RT-DETR)
+# RT-DETR-Based Object Detection for Safety Equipment
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
 [![Ultralytics](https://img.shields.io/badge/Ultralytics-RT--DETR-blue.svg)](https://docs.ultralytics.com/models/rtdetr/)
