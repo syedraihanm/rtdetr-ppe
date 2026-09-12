@@ -99,8 +99,7 @@ The model detects 12 non-COCO safety compliance classes plus the `Person` COCO a
 
 ### 1. Installation
 
-This project is managed using [`uv`](https://github.com/astral-sh/uv) for fast, reproducible dependency resolution:
-
+**Option A: Using [`uv`](https://github.com/astral-sh/uv) (Recommended)**
 ```bash
 # Clone the repository
 git clone https://github.com/syedraihanm/rtdetr-ppe.git
@@ -110,11 +109,23 @@ cd rtdetr-ppe
 uv sync
 ```
 
-Alternatively with standard `pip`:
+**Option B: Standard `pip`**
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+**Option C: Docker Container**
+```bash
+# Build image
+docker build -t rtdetr-ppe:latest .
+
+# Run container (weights auto-download on first start if not pre-mounted)
+docker run -d -p 8000:8000 -v $(pwd)/weights:/app/weights --name ppe-api rtdetr-ppe:latest
+
+# Check health
+curl http://localhost:8000/health
 ```
 
 ### 2. Model Weights (Automatic Download)
@@ -288,23 +299,8 @@ This generates per-class mAP50, mAP50-95, precision/recall metrics, and evaluate
 - `Safety_vest` vs `No_safety_vest`
 
 
-![alt text](image.png)
----
+![Evaluation Metrics Breakdown](docs/images/image.png)
 
-## 🐳 Docker Deployment
-
-Build and run the containerized FastAPI service (weights are automatically fetched on first run if not pre-baked or volume-mounted):
-
-```bash
-# Build image
-docker build -t rtdetr-ppe:latest .
-
-# Run container (weights auto-downloaded on first start, or mount local weights directory)
-docker run -d -p 8000:8000 -v $(pwd)/weights:/app/weights --name ppe-api rtdetr-ppe:latest
-
-# Check health
-curl http://localhost:8000/health
-```
 
 ---
 
