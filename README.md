@@ -153,7 +153,7 @@ export ANTHROPIC_API_KEY="your-anthropic-key"
 # or
 export OPENAI_API_KEY="your-openai-key"
 
-# Optional: Custom model checkpoint path (defaults to weights/best.pt or rtdetr-l.pt)
+# Optional: Custom model checkpoint path (defaults to weights/best.pt)
 export MODEL_PATH="weights/best.pt"
 ```
 
