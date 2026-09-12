@@ -149,7 +149,7 @@ def build_pdf(filename="memo.pdf"):
     # ── SECTION 3: Metrics Table & Analysis ──────────────────────────────────
     story.append(Paragraph("3. Quantitative Evaluation Metrics & Operational Meaning", h1_style))
     story.append(Paragraph(
-        "I stopped training at <b>Epoch 71</b> (after 9h 40m on a Kaggle Tesla T4 GPU) as validation metrics showed clear saturation after peak fitness at <b>Epoch 65</b>. Final evaluation on validation and test splits:",
+        "Training stopped at <b>Epoch 71</b> (after 9h 40m on a Kaggle Tesla T4 GPU) as validation metrics showed clear saturation after peak fitness at <b>Epoch 65</b>. Final evaluation on validation and test splits:",
         body_style
     ))
 

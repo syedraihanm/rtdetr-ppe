@@ -21,7 +21,7 @@ The dataset is partitioned into **82.4% train (8,956 images) / 11.8% valid (1,27
 
 ## 3. Quantitative Evaluation Metrics & Operational Meaning
 
-I stopped training at **Epoch 71** (after 9h 40m of compute on a Kaggle Tesla T4 GPU) as validation metrics showed clear saturation after peak fitness was reached at **Epoch 65**. Evaluation of the final checkpoint (`weights/best.pt`) was conducted on both the validation split and the completely held-out 640-image test set:
+Training stopped at **Epoch 71** (after 9h 40m of compute on a Kaggle Tesla T4 GPU) as validation metrics showed clear saturation after peak fitness was reached at **Epoch 65**. Evaluation of the final checkpoint (`weights/best.pt`) was conducted on both the validation split and the completely held-out 640-image test set:
 
 | Split / Class | Precision | Recall | mAP@50 | mAP@50-95 | Operational Significance |
 |---|---|---|---|---|---|

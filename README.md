@@ -1,15 +1,11 @@
 # RT-DETR-Based Object Detection for Safety Equipment
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
-[![Ultralytics](https://img.shields.io/badge/Ultralytics-RT--DETR-blue.svg)](https://docs.ultralytics.com/models/rtdetr/)
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 A production-ready computer vision and multi-modal query API for construction site Personal Protective Equipment (PPE) compliance detection. Built with **Ultralytics RT-DETR** (Real-Time Detection Transformer) and a **hand-written, framework-free 3-stage reasoning decision layer**.
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```mermaid
 flowchart TD
@@ -47,7 +43,7 @@ flowchart TD
 
 ---
 
-## 📂 Repository Structure
+##  Repository Structure
 
 ```
 rtdetr-ppe/
@@ -77,7 +73,7 @@ rtdetr-ppe/
 
 ---
 
-## 🏷️ Dataset Classes (13 Classes)
+##  Dataset Classes (13 Classes)
 
 The model detects 12 non-COCO safety compliance classes plus the `Person` COCO anchor class:
 
@@ -99,7 +95,7 @@ The model detects 12 non-COCO safety compliance classes plus the `Person` COCO a
 
 ---
 
-## 🚀 Quickstart
+##  Quickstart
 
 ### 1. Installation
 
@@ -123,9 +119,9 @@ pip install -r requirements.txt
 
 ### 2. Model Weights (Automatic Download)
 
-The API server automatically downloads the fine-tuned `best.pt` checkpoint (~246 MB, Epoch 65, **79.19% mAP@50**) from GitHub Releases on first launch if `weights/best.pt` is not present locally. **No manual download is required!**
+The API server automatically downloads the fine-tuned `best.pt` checkpoint (~246 MB, Epoch 65, **79.19% mAP@50**) from GitHub Releases on first launch if `weights/best.pt` is not present locally.
 
-If you prefer to pre-download weights manually (e.g., for air-gapped or pre-warmed deployments):
+**If you prefer to pre-download weights manually:**
 
 ```bash
 # Linux / macOS / Git Bash
@@ -160,7 +156,7 @@ Interactive Swagger documentation is available at: [http://localhost:8000/docs](
 
 ---
 
-## 📡 API Usage & cURL Examples
+##  API Usage & cURL Examples
 
 ### Endpoint 1: `/detect` (Object Detection)
 
@@ -240,7 +236,7 @@ curl -X POST "http://localhost:8000/ask" \
 
 ---
 
-## 🧠 Decision Layer Design (No Frameworks)
+##  Decision Layer Design (No Frameworks)
 
 `/ask` uses an explicit 3-stage hand-written pipeline:
 
@@ -291,6 +287,8 @@ This generates per-class mAP50, mAP50-95, precision/recall metrics, and evaluate
 - `Head_protection` vs `No_head_protection`
 - `Safety_vest` vs `No_safety_vest`
 
+
+![alt text](image.png)
 ---
 
 ## 🐳 Docker Deployment
