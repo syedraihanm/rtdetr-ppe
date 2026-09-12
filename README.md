@@ -121,9 +121,11 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Download Model Weights
+### 2. Model Weights (Automatic Download)
 
-The fine-tuned `best.pt` checkpoint (~246 MB, Epoch 65, **79.19% mAP@50**) is hosted on GitHub Releases:
+The API server automatically downloads the fine-tuned `best.pt` checkpoint (~246 MB, Epoch 65, **79.19% mAP@50**) from GitHub Releases on first launch if `weights/best.pt` is not present locally. **No manual download is required!**
+
+If you prefer to pre-download weights manually (e.g., for air-gapped or pre-warmed deployments):
 
 ```bash
 # Linux / macOS / Git Bash
@@ -293,14 +295,14 @@ This generates per-class mAP50, mAP50-95, precision/recall metrics, and evaluate
 
 ## 🐳 Docker Deployment
 
-Build and run the containerized FastAPI service:
+Build and run the containerized FastAPI service (weights are automatically fetched on first run if not pre-baked or volume-mounted):
 
 ```bash
 # Build image
 docker build -t rtdetr-ppe:latest .
 
-# Run container
-docker run -d -p 8000:8000 --name ppe-api rtdetr-ppe:latest
+# Run container (weights auto-downloaded on first start, or mount local weights directory)
+docker run -d -p 8000:8000 -v $(pwd)/weights:/app/weights --name ppe-api rtdetr-ppe:latest
 
 # Check health
 curl http://localhost:8000/health

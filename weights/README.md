@@ -1,10 +1,16 @@
 # Model Weights Directory
 
-This directory stores the fine-tuned RT-DETR-L model weights (`best.pt`, ~246 MB).
+This directory stores the fine-tuned RT-DETR-L model weights (`best.pt`, ~246 MB, **79.19% mAP@50**).
 
-## Download Pre-Trained Weights (Recommended)
+## Automatic Download (Default)
 
-The fine-tuned checkpoint is hosted on GitHub Releases:
+**No manual download is required!** When you start the FastAPI server (`uvicorn app.main:app`) or run inference through `app/detection.py`, the system checks for `weights/best.pt`. If missing or incomplete, it automatically streams and verifies the checkpoint directly from GitHub Releases with chunked progress reporting and atomic validation.
+
+---
+
+## Manual Download (Optional / Offline)
+
+If you are running in an air-gapped environment or wish to pre-fetch weights:
 
 ```bash
 # Linux / macOS / Git Bash
@@ -37,10 +43,10 @@ uv run python -c "from ultralytics import RTDETR; RTDETR('rtdetr-l.pt')"
 
 ---
 
-## Inference Fallback Order
+## Inference Resolution Order
 
 `app/detection.py` resolves the model path in this order:
-1. `MODEL_PATH` environment variable
-2. `weights/best.pt`
-3. `runs/train/ppe_rtdetr/weights/best.pt`
-4. `rtdetr-l.pt` (base model fallback)
+1. `custom_path` argument or `MODEL_PATH` environment variable
+2. Local `weights/best.pt` or `runs/train/ppe_rtdetr/weights/best.pt` (if present and > 1 MB)
+3. **Automated download**: fetch fine-tuned `best.pt` from GitHub Release to `weights/best.pt`
+4. `rtdetr-l.pt` (base COCO model fallback if offline)
