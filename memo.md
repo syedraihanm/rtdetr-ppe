@@ -102,9 +102,11 @@ During initial smoke testing, inspection uncovered that 4,990 label files (45.9%
 ## 6. Hand-Written 3-Stage Decision Layer & Insufficient Information Case
 
 To satisfy the strict constraint forbidding agentic frameworks (no LangChain, CrewAI, AutoGen), `app/reasoning.py` executes a hand-written three-stage deterministic pipeline:
-- **Stage 1 (Intent Router):** Parses free-form user questions into `{needs_detection, query_type, target_class, negated}` via a direct HTTP call to an LLM, backed by a deterministic regex-based fallback router.
-- **Stage 2 (Structured Reasoning):** Executes pure Python deterministic rules to evaluate counts, presence, and compliance pairings (e.g. `Head_protection` vs `No_head_protection`).
-- **Stage 3 (Confidence Guardrail):** Evaluates detection confidence and contextual evidence. If evidence is ambiguous, it returns an explicit disclaimer instead of a false guess.
+- **Deciding When to Call Detector vs. Not (Stage 1 — Intent Router):** Parses incoming natural language questions into `{needs_detection: bool, query_type: str, target_class: str, negated: bool}` via a direct HTTP call to an LLM, backed by a deterministic regex-based fallback router.
+  - When queries ask about visual scene elements (e.g. *"How many workers have helmets?"*, *"Is anyone missing a vest?"*), the router assigns **`needs_detection = True`**, routing the image to the RT-DETR vision engine.
+  - When queries are off-topic or general knowledge questions (e.g. *"What is OSHA regulation 1926.100?"*, *"What time is it?"*), the router assigns **`needs_detection = False`**, bypassing the detector entirely (`used_detection: false`) to avoid unnecessary GPU/CPU inference latency.
+- **Stage 2 (Structured Reasoning):** Pure Python deterministic logic evaluates bounding boxes, computing counts, presence checks, and handling compliance-violation pairings (`Head_protection` vs `No_head_protection`, `Safety_vest` vs `No_safety_vest`).
+- **Stage 3 (Confidence Guardrail):** Enforces safety thresholds (`conf >= 0.50` baseline). If the target detection confidence is marginal or ungrounded by a corresponding worker silhouette, it refuses to guess.
 
 ### Concrete Production Execution: Real "Insufficient Information" Case
 - **Input Test Image:** `-1680-_png_jpg.rf.73cee3e264b17ce5579750df4e4610f4.jpg`
@@ -115,14 +117,75 @@ To satisfy the strict constraint forbidding agentic frameworks (no LangChain, Cr
   ```json
   {
     "answer": "I can't confidently answer this from the detections — confidence too low.",
-    "used_detection": true,
-    "confidence": "low"
+    "confidence": "low",
+    "used_detection": true
   }
   ```
 
 ---
 
-## 7. Deployment Recommendations
+## 7. API Usage Instructions & Sample Payloads
+
+### Run Instructions
+```bash
+# Local Python / uv (weights auto-download on first launch if missing)
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Containerized Docker deployment
+docker run -d -p 8000:8000 --name ppe-api rtdetr-ppe:latest
+```
+
+### Endpoint 1: `POST /detect` (Object Detection & Bounding Boxes)
+Accepts a multipart image upload and returns bounding boxes in pixel coordinates (`[x1, y1, x2, y2]`):
+
+**Request:**
+```bash
+curl -X POST "http://localhost:8000/detect?conf=0.25" \
+  -F "file=@sample_site.jpg"
+```
+
+**Response (`200 OK`):**
+```json
+{
+  "detections": [
+    {
+      "class": "Head_protection",
+      "confidence": 0.9234,
+      "box": [312.45, 84.12, 420.89, 195.67]
+    },
+    {
+      "class": "No_safety_vest",
+      "confidence": 0.8415,
+      "box": [298.11, 190.54, 450.32, 480.21]
+    }
+  ],
+  "image_width": 1280,
+  "image_height": 720
+}
+```
+
+### Endpoint 2: `POST /ask` (Direct Grounded Safety Reasoning)
+Accepts a multipart image and a natural language safety question:
+
+**Request:**
+```bash
+curl -X POST "http://localhost:8000/ask" \
+  -F "file=@sample_site.jpg" \
+  -F "question=How many workers are wearing hardhats?"
+```
+
+**Response (`200 OK`):**
+```json
+{
+  "answer": "There are 2 workers wearing head protection.",
+  "confidence": "high",
+  "used_detection": true
+}
+```
+
+---
+
+## 8. Deployment Recommendations & Latency Profile
 
 1. **Asymmetric Operating Thresholds:** Set conservative detection thresholds: `conf = 0.65` for declaring compliance (`Head_protection`, `Safety_vest`) and `conf = 0.35` for triggering inspection alerts (`No_head_protection`, `No_safety_vest`). This enforces a safety-first operating bias.
 2. **Temporal Multi-Frame Smoothing:** In streaming CCTV deployments, require PPE violations to persist across &ge; 5 consecutive frames before firing alerts, filtering out temporary occlusion glitches.

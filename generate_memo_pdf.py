@@ -222,96 +222,155 @@ def build_pdf(filename="memo.pdf"):
             Paragraph("Root Cause & Safety Consequence", th_style),
         ],
         [
-            RLImage("docs/images/failure_cases/thumb_case1.jpg", width=1.75*inch, height=0.86*inch),
-            Paragraph("<b>Case 1: Shadow False Compliance</b><br/><font name='Courier' size=5.8>2008_008526...jpg</font>", td_style),
-            Paragraph("GT: <b>No_head_protection</b><br/>Pred: <b>Head_protection</b> (conf 0.30)", td_style),
+            RLImage("docs/images/failure_cases/thumb_case1.jpg", width=1.35*inch, height=0.58*inch),
+            Paragraph("<b>Case 1: Shadow False Compliance</b><br/><font name='Courier' size=5.5>2008_008526...jpg</font>", td_style),
+            Paragraph("GT: <b>No_head_protection</b><br/>Pred: <b>Head_protection</b> (0.30)", td_style),
             Paragraph("Worker in shadow wearing dark beanie; brim curvature mimics hardhat dome. <i>Consequence: Dangerous false compliance clears unhelmeted worker.</i>", td_style),
         ],
         [
-            RLImage("docs/images/failure_cases/thumb_case2.jpg", width=1.75*inch, height=0.86*inch),
-            Paragraph("<b>Case 2: High-Vis Workwear Confusion</b><br/><font name='Courier' size=5.8>001425...7b40.jpg</font>", td_style),
-            Paragraph("GT: <b>No_safety_vest</b><br/>Pred: <b>Safety_vest</b> (conf 0.86)", td_style),
+            RLImage("docs/images/failure_cases/thumb_case2.jpg", width=1.35*inch, height=0.58*inch),
+            Paragraph("<b>Case 2: High-Vis Workwear Confusion</b><br/><font name='Courier' size=5.5>001425...7b40.jpg</font>", td_style),
+            Paragraph("GT: <b>No_safety_vest</b><br/>Pred: <b>Safety_vest</b> (0.86)", td_style),
             Paragraph("High-vis work shirt with tool straps mimics retroreflective vest tape. <i>Consequence: Safety vest violation missed by auditor.</i>", td_style),
         ],
         [
-            RLImage("docs/images/failure_cases/thumb_case3.jpg", width=1.75*inch, height=0.86*inch),
-            Paragraph("<b>Case 3: Extreme Scale Disparity</b><br/><font name='Courier' size=5.8>construction-3...148.jpg</font>", td_style),
+            RLImage("docs/images/failure_cases/thumb_case3.jpg", width=1.35*inch, height=0.58*inch),
+            Paragraph("<b>Case 3: Extreme Scale Disparity</b><br/><font name='Courier' size=5.5>construction-3...148.jpg</font>", td_style),
             Paragraph("GT: <b>Hand_protection</b> & <b>Eye</b><br/>Pred: <i>Zero detections</i> for PPE", td_style),
-            Paragraph("High crane shot with workers &lt; 80 px; gloves &lt; 14 px collapse below stride-32 feature pyramid. <i>Consequence: False alarms on distant PPE.</i>", td_style),
+            Paragraph("Crane shot with workers &lt; 80 px; gloves &lt; 14 px collapse below stride-32 feature pyramid. <i>Consequence: Small PPE missed at distance.</i>", td_style),
         ],
         [
-            RLImage("docs/images/failure_cases/thumb_case4.jpg", width=1.75*inch, height=0.86*inch),
-            Paragraph("<b>Case 4: Truncated Edge Silhouette</b><br/><font name='Courier' size=5.8>-1680...73ce.jpg</font>", td_style),
-            Paragraph("GT: <b>Person</b> + <b>Safety_vest</b><br/>Pred: Vest (conf 0.39), Person missed", td_style),
+            RLImage("docs/images/failure_cases/thumb_case4.jpg", width=1.35*inch, height=0.58*inch),
+            Paragraph("<b>Case 4: Truncated Edge Silhouette</b><br/><font name='Courier' size=5.5>-1680...73ce.jpg</font>", td_style),
+            Paragraph("GT: <b>Person</b> + <b>Safety_vest</b><br/>Pred: Vest (0.39), Person missed", td_style),
             Paragraph("Worker stepping into frame on left edge (65% cropped). Model misses worker silhouette and vest falls below 0.50 threshold.", td_style),
         ],
         [
-            RLImage("docs/images/failure_cases/thumb_case5.jpg", width=1.75*inch, height=0.86*inch),
-            Paragraph("<b>Case 5: Equipment False Positive</b><br/><font name='Courier' size=5.8>4c43875b...29c6.jpg</font>", td_style),
-            Paragraph("GT: <b>Background (Mixer)</b><br/>Pred: <b>Head_protection</b> (conf 0.36)", td_style),
+            RLImage("docs/images/failure_cases/thumb_case5.jpg", width=1.35*inch, height=0.58*inch),
+            Paragraph("<b>Case 5: Equipment False Positive</b><br/><font name='Courier' size=5.5>4c43875b...29c6.jpg</font>", td_style),
+            Paragraph("GT: <b>Background (Mixer)</b><br/>Pred: <b>Head_protection</b> (0.36)", td_style),
             Paragraph("Yellow convex hydraulic cap on mixer misclassified as helmet due to specular highlight and hemispherical geometry.", td_style),
         ],
     ]
-    t_failures = Table(failures_data, colWidths=[1.85*inch, 1.35*inch, 1.6*inch, 2.7*inch])
+    t_failures = Table(failures_data, colWidths=[1.45*inch, 1.4*inch, 1.6*inch, 3.05*inch])
     t_failures.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("ALIGN", (0, 1), (0, -1), "CENTER"),
         ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
         ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.HexColor("#ffffff"), colors.HexColor("#f8fafc")]),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
     ]))
     story.append(t_failures)
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 3))
 
     # ── SECTION 6: Part B Reasoning Logic & Required Concrete Example ─────────
-    story.append(Paragraph("6. Hand-Written 3-Stage Decision Layer & Insufficient Information Guardrail", h1_style))
+    story.append(Paragraph("6. Hand-Written 3-Stage Decision Layer & Insufficient Information Case", h1_style))
     story.append(Paragraph(
-        "To comply with architectural constraints forbidding agentic frameworks (no LangChain/CrewAI), <font name='Courier'>app/reasoning.py</font> "
-        "executes a hand-written three-stage deterministic pipeline: "
-        "<b>Stage 1 (Intent Routing)</b> extracts query intent (<font name='Courier'>presence_check</font>, <font name='Courier'>count</font>, <font name='Courier'>most_common</font>, or <font name='Courier'>off_topic</font>) via raw HTTP to LLM with rule-based regex fallback. "
-        "<b>Stage 2 (Structured Reasoning)</b> evaluates bounding boxes deterministically, pairing positive and negative compliance classes. "
-        "<b>Stage 3 (Confidence Guardrail)</b> prevents dangerous false declarations by enforcing conservative confidence thresholds.",
+        "To eliminate heavy framework overhead (no LangChain/CrewAI), <font name='Courier'>app/reasoning.py</font> implements an explicit 3-stage decision engine:<br/>"
+        "• <b>Deciding When to Call Detector vs. Not (Stage 1):</b> The Intent Router parses queries into <font name='Courier'>{needs_detection, query_type, target_class, negated}</font>. "
+        "When queries ask about visual compliance or worker counts (e.g. <i>\"How many workers have helmets?\"</i>), <b><font name='Courier'>needs_detection=True</font></b>, triggering RT-DETR. "
+        "When queries are off-topic or general knowledge (e.g. <i>\"What is OSHA regulation 1926.100?\"</i>), <b><font name='Courier'>needs_detection=False</font></b>, bypassing the vision detector entirely (<font name='Courier'>used_detection=False</font>) with zero latency.<br/>"
+        "• <b>Deterministic Reasoning (Stage 2):</b> Resolves counts, presence, and compliance pairings (<font name='Courier'>Head_protection</font> vs <font name='Courier'>No_head_protection</font>).<br/>"
+        "• <b>Confidence Guardrail (Stage 3):</b> Enforces strict safety thresholds to prevent ungrounded predictions.",
         body_style
     ))
 
-    # Concrete required example box
-    story.append(Paragraph("<b>Required Memo Case Study: Real 'Insufficient Information' Production Execution</b>", body_bold))
+    # Concrete required example box with proper JSON format
     guardrail_box_data = [
         [
             Paragraph(
-                "<b>Input Test Image:</b> <font name='Courier'>-1680-_png_jpg.rf.73cee3e264b17ce5579750df4e4610f4.jpg</font><br/>"
-                "<b>User Query:</b> <i>\"Is anyone wearing a safety vest?\"</i><br/>"
-                "<b>Detector Output:</b> 1 detection &rarr; <font name='Courier'>Safety_vest</font> at <font name='Courier'>[0.0, 40.9, 22.8, 172.6]</font> with <b>conf = 0.3942</b>.<br/>"
-                "<b>Why Evidence Was Insufficient:</b> The worker is heavily edge-cropped on the border. The detection confidence (0.394) is strictly below the safety threshold (0.50), while person confidence is absent.<br/>"
-                "<b>API Response Returned:</b><br/>"
-                "<font name='Courier' size=6.8>{\"answer\": \"I can't confidently answer this from the detections — confidence too low.\", \"used_detection\": true, \"confidence\": \"low\"}</font>",
-                callout_style
+                "<b>Case Study: Real 'Insufficient Information' Production Execution</b><br/>"
+                "• <b>Test Image:</b> <font name='Courier'>-1680-_png_jpg.rf.73cee3e264b17ce5579750df4e4610f4.jpg</font> &nbsp;|&nbsp; <b>Query:</b> <i>\"Is anyone wearing a safety vest?\"</i><br/>"
+                "• <b>Detector Output:</b> 1 detection &rarr; <font name='Courier'>Safety_vest</font> at <font name='Courier'>[0.0, 40.9, 22.8, 172.6]</font> with <b>conf = 0.3942</b> (border-cropped worker).<br/>"
+                "• <b>Decision Rule:</b> Stage 3 detects that vest confidence (0.394) is strictly below the safety threshold (0.50) and person context is unconfirmed.<br/>"
+                "• <b>Exact API Response Returned:</b> &rarr;",
+                td_style
+            ),
+            Paragraph(
+                "<font name='Courier' size=5.7><b>{</b><br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"answer\"</font>: <font color='#15803d'>\"I can't confidently answer this from<br/>"
+                "&nbsp;&nbsp;&nbsp;&nbsp;the detections &mdash; confidence too low.\"</font>,<br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"confidence\"</font>: <font color='#b45309'>\"low\"</font>,<br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"used_detection\"</font>: <font color='#6d28d9'>true</font><br/>"
+                "<b>}</b></font>",
+                td_style
             )
         ]
     ]
-    t_box = Table(guardrail_box_data, colWidths=[7.5*inch])
+    t_box = Table(guardrail_box_data, colWidths=[4.7*inch, 2.8*inch])
     t_box.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f1f5f9")),
+        ("BACKGROUND", (0, 0), (0, 0), colors.HexColor("#f8fafc")),
+        ("BACKGROUND", (1, 0), (1, 0), colors.HexColor("#f1f5f9")),
         ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#0284c7")),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
     ]))
     story.append(t_box)
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 3))
 
-    # ── SECTION 7: Deployment Recommendations ────────────────────────────────
-    story.append(Paragraph("7. Deployment Architecture & Operational Guardrails", h1_style))
+    # ── SECTION 7: API Usage Instructions & Sample Payloads ───────────────────
+    story.append(Paragraph("7. API Usage Instructions & Sample Payloads", h1_style))
     story.append(Paragraph(
-        "<b>1. Asymmetric Thresholding:</b> Deploy with split thresholds: set <i>conf = 0.65</i> for declaring compliance (<font name='Courier'>Head_protection</font>) "
-        "and <i>conf = 0.35</i> for flagging potential violations (<font name='Courier'>No_head_protection</font>). This guarantees a conservative bias towards safety inspections. "
-        "<b>2. Multi-Frame Temporal Consensus:</b> In video streams, require PPE violations to persist for &ge; 5 consecutive frames before alerting safety managers, mitigating edge-crop glitches. "
-        "<b>3. Hardware Efficiency:</b> RT-DETR-L executes in 774 ms on CPU (laptop test) and 12.8 ms on Tesla T4, comfortably meeting 30 FPS real-time site camera monitoring requirements.",
+        "<b>Run Locally:</b> <font name='Courier'>uv run uvicorn app.main:app --port 8000</font> &nbsp;|&nbsp; "
+        "<b>Docker:</b> <font name='Courier'>docker run -d -p 8000:8000 rtdetr-ppe</font> &nbsp;|&nbsp; "
+        "<i>Weights auto-download on first launch if missing.</i>",
         body_style
     ))
+
+    api_payload_data = [
+        [
+            Paragraph("<b>POST /detect (Object Detection & BBoxes)</b>", th_style),
+            Paragraph("<b>POST /ask (Direct Grounded Safety Answer)</b>", th_style),
+        ],
+        [
+            Paragraph(
+                "<b>Request:</b><br/>"
+                "<font name='Courier' size=5.4>curl -X POST \"http://localhost:8000/detect?conf=0.25\" \\<br/>"
+                "&nbsp;&nbsp;-F \"file=@sample_site.jpg\"</font><br/>"
+                "<b>Response (200 OK):</b><br/>"
+                "<font name='Courier' size=5.4><b>{</b><br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"detections\"</font>: [<br/>"
+                "&nbsp;&nbsp;&nbsp;&nbsp;{<font color='#0369a1'>\"class\"</font>: <font color='#15803d'>\"Head_protection\"</font>, <font color='#0369a1'>\"confidence\"</font>: 0.9234,<br/>"
+                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#0369a1'>\"box\"</font>: [312.45, 84.12, 420.89, 195.67]},<br/>"
+                "&nbsp;&nbsp;&nbsp;&nbsp;{<font color='#0369a1'>\"class\"</font>: <font color='#15803d'>\"No_safety_vest\"</font>, <font color='#0369a1'>\"confidence\"</font>: 0.8415,<br/>"
+                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#0369a1'>\"box\"</font>: [298.11, 190.54, 450.32, 480.21]}<br/>"
+                "&nbsp;&nbsp;],<br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"image_width\"</font>: 1280, <font color='#0369a1'>\"image_height\"</font>: 720<br/>"
+                "<b>}</b></font>",
+                td_style
+            ),
+            Paragraph(
+                "<b>Request:</b><br/>"
+                "<font name='Courier' size=5.4>curl -X POST \"http://localhost:8000/ask\" \\<br/>"
+                "&nbsp;&nbsp;-F \"file=@sample_site.jpg\" \\<br/>"
+                "&nbsp;&nbsp;-F \"question=How many workers are wearing hardhats?\"</font><br/>"
+                "<b>Response (200 OK):</b><br/>"
+                "<font name='Courier' size=5.4><b>{</b><br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"answer\"</font>: <font color='#15803d'>\"There are 2 workers wearing head protection.\"</font>,<br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"confidence\"</font>: <font color='#15803d'>\"high\"</font>,<br/>"
+                "&nbsp;&nbsp;<font color='#0369a1'>\"used_detection\"</font>: <font color='#6d28d9'>true</font><br/>"
+                "<b>}</b></font>",
+                td_style
+            ),
+        ]
+    ]
+    t_api = Table(api_payload_data, colWidths=[3.75*inch, 3.75*inch])
+    t_api.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+        ("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#f8fafc")),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 2.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+    ]))
+    story.append(t_api)
 
     doc.build(story)
     print(f"[OK] Generated 2-page Technical Memo: {filename}")
