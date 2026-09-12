@@ -7,6 +7,7 @@ Exposes:
 - GET  /health : Health check endpoint.
 """
 
+from contextlib import asynccontextmanager
 import logging
 from typing import Any, Dict, List, Optional
 
@@ -14,16 +15,30 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from app.detection import predict_from_bytes
+from app.detection import get_model, predict_from_bytes
 from app.reasoning import apply_guardrail, execute_pipeline, reason_over_detections, route_intent
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("rtdetr-ppe.api")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Eagerly verify, auto-download if missing, and pre-warm model checkpoint at startup."""
+    logger.info("Initializing RT-DETR PPE model checkpoint during startup...")
+    try:
+        model = get_model()
+        logger.info(f"Model ready with {len(model.names)} classes.")
+    except Exception as e:
+        logger.error(f"Failed to load RT-DETR model during startup: {e}", exc_info=True)
+    yield
+
+
 app = FastAPI(
     title="Construction Site PPE Detection & Reasoning API",
     description="Ultralytics RT-DETR PPE detection with a hand-written 3-stage reasoning decision layer.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS middleware
